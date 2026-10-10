@@ -7,9 +7,10 @@ then save it to `~/.config/hypr/monitors.lua`.
 
 ![Monitor Arranger](preview.png)
 
-> **Status: early development (0.1.0).** The standalone GTK app this plugin
-> grew out of lives on the [`gtk-standalone`](../../tree/gtk-standalone)
-> branch and is feature complete; this branch is the native shell plugin.
+> **Status: early development (0.1.0).** This plugin grew out of the
+> standalone GTK app
+> [omarchy_monitor_arranger](https://github.com/FabioCuccaro/omarchy_monitor_arranger),
+> which is feature complete and remains available.
 
 ## Features
 
@@ -35,10 +36,10 @@ No extra packages.
 
 ## Install
 
-From the marketplace / git (once released on the default branch):
+From git:
 
 ```bash
-omarchy plugin add https://github.com/FabioCuccaro/omarchy_monitor_arranger.git --enable
+omarchy plugin add https://github.com/FabioCuccaro/omarchy_monitor_manager.git --enable
 ```
 
 During development, from a checkout of this branch:

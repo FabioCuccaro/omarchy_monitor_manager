@@ -94,6 +94,12 @@ Saving files under `~/.config/omarchy/plugins/` hot-reloads the plugin.
 
 ## Roadmap
 
+- [ ] **Theme (next):** the panel already follows the active Omarchy theme —
+      background, text, borders, accent, warnings and fonts all come from the
+      shell's `Color`/`Style`, which update live on `omarchy theme set`. Still to do:
+  - [ ] monitor colours from the theme palette (`blue`, `orange`, `green`, … in
+        `colors.toml`) instead of rotating the accent hue, reloaded on theme change
+  - [ ] check a live theme switch with the panel open, and light themes
 - [ ] Identify: show each output's name on its screen
 - [ ] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
 - [ ] Precise X/Y position fields

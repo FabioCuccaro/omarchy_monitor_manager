@@ -1,6 +1,6 @@
 .pragma library
 
-// Pure layout and monitors.lua logic for the Monitor Arranger panel.
+// Pure layout and monitors.lua logic for the Monitor Manager panel.
 // No QML types in here, so test/model.test.js can run it under plain node.
 //
 // A monitor is a plain object:

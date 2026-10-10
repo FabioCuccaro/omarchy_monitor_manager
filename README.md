@@ -1,11 +1,11 @@
-# Omarchy Monitor Arranger
+# Omarchy Monitor Manager
 
 An [Omarchy](https://omarchy.org) shell plugin to arrange your displays
 visually: drag monitors into place with snapping, pick resolution, scale,
 rotation, VRR and mirroring, try the layout live with an automatic rollback,
 then save it to `~/.config/hypr/monitors.lua`.
 
-![Monitor Arranger](preview.png)
+![Monitor Manager](preview.png)
 
 > **Status: early development (0.1.0).** This plugin grew out of the
 > standalone GTK app

@@ -5,7 +5,7 @@ import qs.Commons
 import qs.Ui
 import "Model.js" as Model
 
-// Monitor Arranger for omarchy-shell. Summoned/toggled through the shell host:
+// Monitor Manager for omarchy-shell. Summoned/toggled through the shell host:
 //   omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 // The host calls open(payloadJson) / close() and reads `opened`; it also
 // injects `shell` right after the Loader resolves.
@@ -322,7 +322,7 @@ Item {
   FloatingWindow {
     id: win
     visible: root.opened
-    title: "Monitor Arranger"
+    title: "Monitor Manager"
     color: root.background
     implicitWidth: Style.space(1100)
     implicitHeight: Style.space(680)
@@ -348,7 +348,7 @@ Item {
           width: parent.width - actions.width - parent.spacing
           anchors.verticalCenter: parent.verticalCenter
           Text {
-            text: "Monitor Arranger"
+            text: "Monitor Manager"
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.heading

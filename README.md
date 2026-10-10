@@ -45,7 +45,7 @@ omarchy plugin add https://github.com/FabioCuccaro/omarchy_monitor_manager.git -
 During development, from a checkout of this branch:
 
 ```bash
-id=io.github.fabiocuccaro.monitor-arranger
+id=io.github.fabiocuccaro.monitor-manager
 mkdir -p ~/.config/omarchy/plugins/$id
 cp manifest.json Model.js Panel.qml ~/.config/omarchy/plugins/$id/
 omarchy-shell shell rescanPlugins
@@ -55,7 +55,7 @@ omarchy-shell shell setPluginEnabled $id true
 ## Usage
 
 ```bash
-omarchy-shell shell toggle io.github.fabiocuccaro.monitor-arranger
+omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 ```
 
 To add it to the Omarchy menu, put an entry in

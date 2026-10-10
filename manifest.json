@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "io.github.fabiocuccaro.monitor-arranger",
+  "id": "io.github.fabiocuccaro.monitor-manager",
   "name": "Monitor Arranger",
   "version": "0.1.0",
   "author": "Fabio Cuccaro",
   "license": "MIT",
-  "description": "Arrange your displays visually: drag monitors into place with snapping, pick resolution, scale, rotation, VRR and mirroring, try the layout live with automatic rollback, then save it to ~/.config/hypr/monitors.lua. Summon with: omarchy-shell shell toggle io.github.fabiocuccaro.monitor-arranger",
+  "description": "Arrange your displays visually: drag monitors into place with snapping, pick resolution, scale, rotation, VRR and mirroring, try the layout live with automatic rollback, then save it to ~/.config/hypr/monitors.lua. Summon with: omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager",
   "kinds": [
     "panel"
   ],

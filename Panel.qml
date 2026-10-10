@@ -6,7 +6,7 @@ import qs.Ui
 import "Model.js" as Model
 
 // Monitor Arranger for omarchy-shell. Summoned/toggled through the shell host:
-//   omarchy-shell shell toggle io.github.fabiocuccaro.monitor-arranger
+//   omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 // The host calls open(payloadJson) / close() and reads `opened`; it also
 // injects `shell` right after the Loader resolves.
 //
@@ -19,7 +19,7 @@ Item {
   id: root
 
   property bool opened: false
-  readonly property string selfId: "io.github.fabiocuccaro.monitor-arranger"
+  readonly property string selfId: "io.github.fabiocuccaro.monitor-manager"
   property var shell: null
   onShellChanged: {
     if (!root.opened && root.shell && root.shell.openPanelIds

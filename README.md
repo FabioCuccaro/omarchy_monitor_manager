@@ -87,3 +87,7 @@ Saving files under `~/.config/omarchy/plugins/` hot-reloads the plugin.
 - [ ] Precise X/Y position fields
 - [ ] "Arrange displays…" entry next to the built-in Display panel
 - [ ] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
+
+## License
+
+[MIT](LICENSE) © 2026 Fabio Cuccaro

@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Monitor Arranger
-Comment=Visual monitor arrangement for Hyprland
-Exec=monitor-arranger
-Icon=video-display
-Terminal=false
-Categories=Settings;HardwareSettings;
-StartupNotify=true

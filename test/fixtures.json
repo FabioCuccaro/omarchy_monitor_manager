@@ -1,0 +1,702 @@
+{
+ "hypr": [
+  {
+   "id": 0,
+   "name": "HDMI-A-1",
+   "description": "Samsung Electric Company U28H75x HTPK500077",
+   "make": "Samsung Electric Company",
+   "model": "U28H75x",
+   "width": 3840,
+   "height": 2160,
+   "refreshRate": 60.0,
+   "x": 0,
+   "y": 0,
+   "scale": 1.6,
+   "transform": 0,
+   "vrr": false,
+   "disabled": false,
+   "mirrorOf": "none",
+   "focused": true,
+   "availableModes": [
+    "3840x2160@60.00Hz",
+    "3840x2160@59.94Hz",
+    "2560x1440@59.95Hz",
+    "1920x1080@60.00Hz",
+    "1920x1080@60.00Hz"
+   ]
+  },
+  {
+   "id": 1,
+   "name": "DP-2",
+   "description": "Generic 1080p",
+   "make": "",
+   "model": "",
+   "width": 1920,
+   "height": 1080,
+   "refreshRate": 60.0,
+   "x": 400,
+   "y": 1350,
+   "scale": 1.2,
+   "transform": 0,
+   "vrr": false,
+   "disabled": false,
+   "mirrorOf": "none",
+   "focused": false,
+   "availableModes": [
+    "1920x1080@60.00Hz",
+    "1280x720@60.00Hz"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "eDP-1",
+   "description": "BOE panel",
+   "make": "BOE",
+   "model": "0x0BCA",
+   "width": 0,
+   "height": 0,
+   "refreshRate": 0,
+   "x": 0,
+   "y": 0,
+   "scale": 2.0,
+   "transform": 0,
+   "vrr": false,
+   "disabled": true,
+   "mirrorOf": "none",
+   "focused": false,
+   "availableModes": [
+    "2880x1800@120.00Hz",
+    "2880x1800@60.00Hz"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "DP-3",
+   "description": "Mirror target",
+   "make": "Acme",
+   "model": "M1",
+   "width": 1920,
+   "height": 1080,
+   "refreshRate": 60.0,
+   "x": 0,
+   "y": 0,
+   "scale": 1.0,
+   "transform": 0,
+   "vrr": true,
+   "disabled": false,
+   "mirrorOf": "1",
+   "focused": false,
+   "availableModes": [
+    "1920x1080@60.00Hz"
+   ]
+  }
+ ],
+ "omarchyConfig": "-- See https://wiki.hypr.land/Configuring/Basics/Monitors/\n-- List current monitors and supported resolutions with: hyprctl monitors all\n\nlocal omarchy_gdk_scale = 2\nlocal omarchy_monitor_scale = 1.6\n\nhl.env(\"GDK_SCALE\", tostring(omarchy_gdk_scale))\nhl.monitor({ output = \"\", mode = \"preferred\", position = \"auto\", scale = omarchy_monitor_scale })\n\n-- Configure a specific monitor.\n\nhl.monitor({\n  output = \"HDMI-A-1\",\n  mode = \"3840x2160@60\",\n  position = \"0x0\",\n  scale = 1.6,\n})\n\nhl.monitor({\n  output = \"DP-2\",\n  mode = \"1920x1080@60\",\n  position = \"400x1350\",\n  scale = 1.2,\n  vrr = 2,\n})\n\n-- Portrait/rotated secondary monitor (transform: 1 = 90°, 3 = 270°).\n-- hl.monitor({ output = \"DP-2\", mode = \"preferred\", position = \"auto\", scale = 1, transform = 1 })\n",
+ "edgeConfig": "local s = 2\nhl.monitor({ output = \"\", mode = \"preferred\", position = \"auto\", scale = s })\nhl.monitor({ output = \"desc:Samsung Electric Company U28H75x\", mode = \"preferred\", position = \"0x0\", scale = 1, bitdepth = 10, reserved_area = { top = 10, bottom = 0 } })\n-- hl.monitor({ output = \"DP-2\", mode = \"preferred\", position = \"auto\", scale = 1, transform = 1 })\nhl.monitor({\n  output = \"DP-2\", -- comment, with a comma\n  mode = \"1920x1080@60\",\n  position = \"0x0\",\n  scale = 1,\n})\nhl.monitor({ output = \"DP-2\", mode = \"1280x720@60\", position = \"0x0\", scale = 1 })\n",
+ "built": {
+  "states": [
+   [
+    3840,
+    2160,
+    60.0,
+    0,
+    0,
+    1.6,
+    0,
+    0,
+    false,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    400,
+    1350,
+    1.2,
+    0,
+    2,
+    false,
+    ""
+   ],
+   [
+    2880,
+    1800,
+    120.0,
+    0,
+    0,
+    2.0,
+    0,
+    0,
+    true,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    0,
+    0,
+    1.0,
+    0,
+    1,
+    false,
+    "DP-2"
+   ]
+  ],
+  "modes": [
+   [
+    [
+     3840,
+     2160,
+     60.0
+    ],
+    [
+     3840,
+     2160,
+     59.94
+    ],
+    [
+     2560,
+     1440,
+     59.95
+    ],
+    [
+     1920,
+     1080,
+     60.0
+    ]
+   ],
+   [
+    [
+     1920,
+     1080,
+     60.0
+    ],
+    [
+     1280,
+     720,
+     60.0
+    ]
+   ],
+   [
+    [
+     2880,
+     1800,
+     120.0
+    ],
+    [
+     2880,
+     1800,
+     60.0
+    ]
+   ],
+   [
+    [
+     1920,
+     1080,
+     60.0
+    ]
+   ]
+  ],
+  "inline": [
+   "hl.monitor({ output = \"HDMI-A-1\", mode = \"3840x2160@60\", position = \"0x0\", scale = 1.6, transform = 0, vrr = 0, disabled = false })",
+   "hl.monitor({ output = \"DP-2\", mode = \"1920x1080@60\", position = \"400x1350\", scale = 1.2, transform = 0, vrr = 2, disabled = false })",
+   "hl.monitor({ output = \"eDP-1\", disabled = true })",
+   "hl.monitor({ output = \"DP-3\", mode = \"1920x1080@60\", position = \"0x0\", scale = 1, transform = 0, vrr = 1, mirror = \"DP-2\", disabled = false })"
+  ],
+  "applyOrder": [
+   "HDMI-A-1",
+   "DP-2",
+   "DP-3",
+   "eDP-1"
+  ]
+ },
+ "roundtrip": "-- See https://wiki.hypr.land/Configuring/Basics/Monitors/\n-- List current monitors and supported resolutions with: hyprctl monitors all\n\nlocal omarchy_gdk_scale = 2\nlocal omarchy_monitor_scale = 1.6\n\nhl.env(\"GDK_SCALE\", tostring(omarchy_gdk_scale))\nhl.monitor({ output = \"\", mode = \"preferred\", position = \"auto\", scale = omarchy_monitor_scale })\n\n-- Configure a specific monitor.\n\nhl.monitor({\n  output = \"HDMI-A-1\",\n  mode = \"3840x2160@60\",\n  position = \"0x0\",\n  scale = 1.6,\n})\n\nhl.monitor({\n  output = \"DP-2\",\n  mode = \"1920x1080@60\",\n  position = \"400x1350\",\n  scale = 1.2,\n  vrr = 2,\n})\n\n-- Portrait/rotated secondary monitor (transform: 1 = 90°, 3 = 270°).\n-- hl.monitor({ output = \"DP-2\", mode = \"preferred\", position = \"auto\", scale = 1, transform = 1 })\n\nhl.monitor({\n  output = \"eDP-1\",\n  disabled = true,\n})\n\nhl.monitor({\n  output = \"DP-3\",\n  mode = \"1920x1080@60\",\n  position = \"0x0\",\n  scale = 1,\n  vrr = 1,\n  mirror = \"DP-2\",\n})\n",
+ "edge": "local s = 2\nhl.monitor({ output = \"\", mode = \"preferred\", position = \"auto\", scale = s })\nhl.monitor({\n  output = \"desc:Samsung Electric Company U28H75x\",\n  mode = \"3840x2160@60\",\n  position = \"0x0\",\n  scale = 1.6,\n  bitdepth = 10,\n  reserved_area = { top = 10, bottom = 0 },\n})\n-- hl.monitor({ output = \"DP-2\", mode = \"preferred\", position = \"auto\", scale = 1, transform = 1 })\nhl.monitor({\n  output = \"DP-2\",\n  mode = \"1920x1080@60\",\n  position = \"400x1350\",\n  scale = 1.2,\n  transform = 1,\n  vrr = 2,\n})\n-- duplicate disabled by monitor-arranger:\n-- hl.monitor({ output = \"DP-2\", mode = \"1280x720@60\", position = \"0x0\", scale = 1 })\n\nhl.monitor({\n  output = \"eDP-1\",\n  disabled = true,\n})\n\nhl.monitor({\n  output = \"DP-3\",\n  mode = \"1920x1080@60\",\n  position = \"0x0\",\n  scale = 1,\n  vrr = 1,\n  mirror = \"DP-2\",\n})\n",
+ "empty": "-- See https://wiki.hypr.land/Configuring/Basics/Monitors/\n-- List current monitors and supported resolutions with: hyprctl monitors all\n\nhl.monitor({\n  output = \"HDMI-A-1\",\n  mode = \"3840x2160@60\",\n  position = \"0x0\",\n  scale = 1.6,\n})\n\nhl.monitor({\n  output = \"DP-2\",\n  mode = \"1920x1080@60\",\n  position = \"400x1350\",\n  scale = 1.2,\n  vrr = 2,\n})\n",
+ "scales": {
+  "3840x2160": [
+   0.5,
+   0.5333333333333333,
+   0.6,
+   0.625,
+   0.6666666666666666,
+   0.75,
+   0.8,
+   0.8333333333333334,
+   1.0,
+   1.0666666666666667,
+   1.2,
+   1.25,
+   1.3333333333333333,
+   1.5,
+   1.6,
+   1.6666666666666667,
+   1.875,
+   2.0,
+   2.4,
+   2.5,
+   2.6666666666666665,
+   3.0
+  ],
+  "1920x1080": [
+   0.5,
+   0.5333333333333333,
+   0.6,
+   0.625,
+   0.6666666666666666,
+   0.75,
+   0.8,
+   0.8333333333333334,
+   1.0,
+   1.2,
+   1.25,
+   1.3333333333333333,
+   1.5,
+   1.6,
+   1.6666666666666667,
+   1.875,
+   2.0,
+   2.4,
+   2.5,
+   2.6666666666666665,
+   3.0
+  ],
+  "2880x1800": [
+   0.5,
+   0.5333333333333333,
+   0.6,
+   0.625,
+   0.6666666666666666,
+   0.75,
+   0.8,
+   0.8333333333333334,
+   0.9,
+   1.0,
+   1.125,
+   1.2,
+   1.25,
+   1.3333333333333333,
+   1.5,
+   1.6,
+   1.6666666666666667,
+   1.8,
+   1.875,
+   2.0,
+   2.25,
+   2.4,
+   2.5,
+   2.6666666666666665,
+   3.0
+  ],
+  "2560x1440": [
+   0.5,
+   0.5333333333333333,
+   0.625,
+   0.6666666666666666,
+   0.8,
+   0.8333333333333334,
+   1.0,
+   1.0666666666666667,
+   1.25,
+   1.3333333333333333,
+   1.6,
+   1.6666666666666667,
+   2.0,
+   2.1333333333333333,
+   2.5,
+   2.6666666666666665
+  ]
+ },
+ "labels": [
+  [
+   1,
+   "1",
+   "1"
+  ],
+  [
+   1.2,
+   "1.2",
+   "1.2"
+  ],
+  [
+   1.6,
+   "1.6",
+   "1.6"
+  ],
+  [
+   1.3333333333333333,
+   "1.333333",
+   "1.333"
+  ],
+  [
+   0.625,
+   "0.625",
+   "0.625"
+  ],
+  [
+   1.875,
+   "1.875",
+   "1.875"
+  ],
+  [
+   2.5,
+   "2.5",
+   "2.5"
+  ]
+ ],
+ "refresh": [
+  [
+   60.0,
+   "60"
+  ],
+  [
+   59.94,
+   "59.94"
+  ],
+  [
+   143.998,
+   "144"
+  ],
+  [
+   120.0,
+   "120"
+  ]
+ ],
+ "snaps": {
+  "threshold": 152,
+  "steps": [
+   [
+    2600,
+    2600,
+    225.0,
+    [
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     null,
+     225.0
+    ]
+   ],
+   [
+    2560,
+    2560,
+    225.0,
+    [
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     null,
+     225.0
+    ]
+   ],
+   [
+    2550,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2540,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2448,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2446,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2450,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2470,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2500,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2560,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2600,
+    2400.0,
+    225.0,
+    [
+     [
+      "v",
+      2400.0
+     ],
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     2400.0,
+     225.0
+    ]
+   ],
+   [
+    2650,
+    2650,
+    225.0,
+    [
+     [
+      "h",
+      675.0
+     ]
+    ],
+    [
+     null,
+     225.0
+    ]
+   ]
+  ]
+ },
+ "geometry": {
+  "overlapState": [
+   [
+    3840,
+    2160,
+    60.0,
+    0,
+    0,
+    1.6,
+    0,
+    0,
+    false,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    300,
+    700,
+    1.2,
+    0,
+    2,
+    false,
+    ""
+   ]
+  ],
+  "overlapping": [
+   "DP-2",
+   "HDMI-A-1"
+  ],
+  "detached": [
+   "DP-2"
+  ],
+  "detachedNone": [],
+  "autoArrangeRow": [
+   [
+    3840,
+    2160,
+    60.0,
+    1600,
+    0,
+    1.6,
+    0,
+    0,
+    false,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    0,
+    450,
+    1.2,
+    0,
+    2,
+    false,
+    ""
+   ]
+  ],
+  "autoArrangeColumn": [
+   [
+    3840,
+    2160,
+    60.0,
+    0,
+    0,
+    1.6,
+    0,
+    0,
+    false,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    2400,
+    450,
+    1.2,
+    0,
+    2,
+    false,
+    ""
+   ]
+  ],
+  "rotateKeepsNeighbour": [
+   [
+    3840,
+    2160,
+    60.0,
+    0,
+    0,
+    1.6,
+    1,
+    0,
+    false,
+    ""
+   ],
+   [
+    1920,
+    1080,
+    60.0,
+    1350,
+    0,
+    1.2,
+    0,
+    2,
+    false,
+    ""
+   ]
+  ]
+ }
+}

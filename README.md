@@ -31,26 +31,27 @@ then save it to `~/.config/hypr/monitors.lua`.
 
 ## Requirements
 
-Omarchy with the Quickshell-based shell and Hyprland ≥ 0.55 (Lua config).
-No extra packages.
+- Omarchy with the Quickshell-based shell and Hyprland ≥ 0.55 (Lua config).
+- `python3`, only for the optional menu entry script (it validates the menu
+  file before saving it).
 
 ## Install
-
-From git:
 
 ```bash
 omarchy plugin add https://github.com/FabioCuccaro/omarchy_monitor_manager.git --enable
 ```
 
-During development, from a checkout of this branch:
+The plugin is cloned into
+`~/.config/omarchy/plugins/io.github.fabiocuccaro.monitor-manager/`.
+To update or uninstall it:
 
 ```bash
-id=io.github.fabiocuccaro.monitor-manager
-mkdir -p ~/.config/omarchy/plugins/$id
-cp manifest.json Model.js Panel.qml ~/.config/omarchy/plugins/$id/
-omarchy-shell shell rescanPlugins
-omarchy-shell shell setPluginEnabled $id true
+omarchy plugin update io.github.fabiocuccaro.monitor-manager
+omarchy plugin remove io.github.fabiocuccaro.monitor-manager
 ```
+
+If the panel still shows the old version after an update, run
+`omarchy restart shell` (the shell caches the plugin's QML).
 
 ## Usage
 
@@ -58,11 +59,13 @@ omarchy-shell shell setPluginEnabled $id true
 omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 ```
 
+<kbd>Esc</kbd> closes the panel.
+
 ### Omarchy menu entry
 
 `omarchy plugin add` never runs plugin code, so adding the menu entry is a
-separate, opt-in step. This puts **Monitor Manager** under *Setup*, next to
-*Monitors*:
+separate, opt-in step. This adds **Monitor Manager** at the end of the
+*Setup* menu:
 
 ```bash
 ~/.config/omarchy/plugins/io.github.fabiocuccaro.monitor-manager/menu-entry.sh install
@@ -80,6 +83,7 @@ You can also bind the command above to a key in `~/.config/hypr/bindings.lua`.
 manifest.json        plugin manifest (kind: panel)
 Panel.qml            UI: window, canvas, sidebar, try/save flow
 Model.js             pure layout + monitors.lua logic, no QML types
+menu-entry.sh        opt-in Omarchy menu entry (install/remove)
 test/model.test.js   node tests for Model.js
 test/fixtures.json   golden results from the reference GTK implementation
 ```
@@ -90,20 +94,28 @@ omarchy plugin validate "$PWD"                            # manifest
 qmllint -I "$OMARCHY_PATH/shell" Panel.qml                # QML
 ```
 
-Saving files under `~/.config/omarchy/plugins/` hot-reloads the plugin.
+To try local changes, copy the plugin files into the installed plugin folder
+and restart the shell — saving files there triggers a reload, but changed QML
+is only picked up reliably after a restart:
+
+```bash
+cp manifest.json Model.js Panel.qml \
+  ~/.config/omarchy/plugins/io.github.fabiocuccaro.monitor-manager/
+omarchy restart shell
+```
 
 ## Roadmap
 
-- [ ] **Theme (next):** the panel already follows the active Omarchy theme —
-      background, text, borders, accent, warnings and fonts all come from the
-      shell's `Color`/`Style`, which update live on `omarchy theme set`. Still to do:
+- [ ] **Theme (next).** Background, text, borders, accent, warnings and fonts
+      already come from the shell's `Color`/`Style`, so the panel follows the
+      active Omarchy theme. Still to do:
   - [ ] monitor colours from the theme palette (`blue`, `orange`, `green`, … in
         `colors.toml`) instead of rotating the accent hue, reloaded on theme change
-  - [ ] check a live theme switch with the panel open, and light themes
+  - [ ] verify a live theme switch with the panel open, and light themes
 - [ ] Identify: show each output's name on its screen
 - [ ] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
 - [ ] Precise X/Y position fields
-- [ ] "Arrange displays…" entry next to the built-in Display panel
+- [ ] A shortcut from the built-in Display panel (needs a change in Omarchy itself)
 - [ ] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
 
 ## License

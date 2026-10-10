@@ -106,12 +106,6 @@ omarchy restart shell
 
 ## Roadmap
 
-- [ ] **Theme (next).** Background, text, borders, accent, warnings and fonts
-      already come from the shell's `Color`/`Style`, so the panel follows the
-      active Omarchy theme. Still to do:
-  - [ ] monitor colours from the theme palette (`blue`, `orange`, `green`, … in
-        `colors.toml`) instead of rotating the accent hue, reloaded on theme change
-  - [ ] verify a live theme switch with the panel open, and light themes
 - [ ] Identify: show each output's name on its screen
 - [ ] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
 - [ ] Precise X/Y position fields

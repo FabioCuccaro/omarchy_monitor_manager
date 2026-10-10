@@ -58,9 +58,21 @@ omarchy-shell shell setPluginEnabled $id true
 omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 ```
 
-To add it to the Omarchy menu, put an entry in
-`~/.config/omarchy/extensions/omarchy-menu.jsonc` whose `action` runs the
-command above, or bind it to a key in `~/.config/hypr/bindings.lua`.
+### Omarchy menu entry
+
+`omarchy plugin add` never runs plugin code, so adding the menu entry is a
+separate, opt-in step. This puts **Monitor Manager** under *Setup*, next to
+*Monitors*:
+
+```bash
+~/.config/omarchy/plugins/io.github.fabiocuccaro.monitor-manager/menu-entry.sh install
+```
+
+It edits `~/.config/omarchy/extensions/omarchy-menu.jsonc` (with a backup and
+a parse check, so a mistake can't break your menu). The entry hides itself if
+the plugin is removed; `menu-entry.sh remove` takes it out for good.
+
+You can also bind the command above to a key in `~/.config/hypr/bindings.lua`.
 
 ## Development
 

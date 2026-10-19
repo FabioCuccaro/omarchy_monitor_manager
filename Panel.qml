@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import qs.Commons
 import qs.Ui
@@ -14,7 +15,6 @@ import "Model.js" as Model
 // Monitors are plain JS objects mutated in place, so every change bumps
 // `revision`, which the bindings below depend on to re-evaluate.
 //
-// TODO: identify overlay on each screen, undo, keyboard navigation.
 Item {
   id: root
 
@@ -40,6 +40,15 @@ Item {
   property string configText: ""
   property string statusText: ""
   property bool snapEnabled: true
+  property bool identifying: false
+
+  // Undo/redo keep whole-layout snapshots (Model.snapshot); the depths are
+  // plain ints because pushing to a JS array doesn't notify bindings.
+  readonly property int undoLimit: 50
+  property var undoStack: []
+  property var redoStack: []
+  property int undoDepth: 0
+  property int redoDepth: 0
 
   readonly property var selected: {
     root.revision
@@ -94,6 +103,7 @@ Item {
   function close() {
     if (!root.opened) return
     if (revertTimer.running) root.finishTry(false)
+    root.identifying = false
     root.opened = false
     if (root.shell && typeof root.shell.hide === "function")
       root.shell.hide(root.selfId)
@@ -107,6 +117,10 @@ Item {
   // --------------------------------------------------------------- loading
 
   function reload() {
+    root.undoStack = []
+    root.redoStack = []
+    root.undoDepth = 0
+    root.redoDepth = 0
     configFile.reload()
     readMonitors.running = true
   }
@@ -271,8 +285,82 @@ Item {
 
   function select(i) { root.selectedIndex = i; root.changed() }
 
+  // Call before every mutation of the layout.
+  function pushUndo() {
+    root.undoStack.push(Model.snapshot(root.monitors))
+    if (root.undoStack.length > root.undoLimit) root.undoStack.shift()
+    root.redoStack = []
+    root.undoDepth = root.undoStack.length
+    root.redoDepth = 0
+  }
+
+  function undo() {
+    if (!root.undoStack.length) return
+    root.redoStack.push(Model.snapshot(root.monitors))
+    Model.restore(root.monitors, root.undoStack.pop())
+    root.undoDepth = root.undoStack.length
+    root.redoDepth = root.redoStack.length
+    root.changed()
+  }
+
+  function redo() {
+    if (!root.redoStack.length) return
+    root.undoStack.push(Model.snapshot(root.monitors))
+    Model.restore(root.monitors, root.redoStack.pop())
+    root.undoDepth = root.undoStack.length
+    root.redoDepth = root.redoStack.length
+    root.changed()
+  }
+
+  function setPosition(axis, value) {
+    var m = root.selected
+    if (!m || !Model.inLayout(m) || m[axis] === value) return
+    root.pushUndo()
+    m[axis] = value
+    Model.normalize(root.monitors)
+    root.changed()
+  }
+
+  function nudge(dx, dy) {
+    var m = root.selected
+    if (!m || !Model.inLayout(m)) return
+    root.pushUndo()
+    m.x += dx
+    m.y += dy
+    Model.normalize(root.monitors)
+    root.changed()
+  }
+
+  function selectNext(step) {
+    var order = Model.displayOrder(root.monitors)
+    var n = order.length
+    if (n > 0) root.select(order[(order.indexOf(root.selectedIndex) + step + n) % n])
+  }
+
+  function handleKey(e) {
+    var ctrl = e.modifiers & Qt.ControlModifier
+    var shift = e.modifiers & Qt.ShiftModifier
+    var step = shift ? 1 : 10
+    e.accepted = true
+    if (ctrl && e.key === Qt.Key_Z) { shift ? root.redo() : root.undo() }
+    else if (ctrl && e.key === Qt.Key_Y) root.redo()
+    else if (e.key === Qt.Key_Left) root.nudge(-step, 0)
+    else if (e.key === Qt.Key_Right) root.nudge(step, 0)
+    else if (e.key === Qt.Key_Up) root.nudge(0, -step)
+    else if (e.key === Qt.Key_Down) root.nudge(0, step)
+    else if (e.key === Qt.Key_Tab) root.selectNext(1)
+    else if (e.key === Qt.Key_Backtab) root.selectNext(-1)
+    else e.accepted = false
+  }
+
+  function identify() {
+    root.identifying = true
+    identifyTimer.restart()
+  }
+
   function setMode(value) {
     var m = root.selected
+    root.pushUndo()
     var md = m.modes[parseInt(value, 10)]
     Model.changeGeometry(root.monitors, m, function() {
       m.width = md[0]; m.height = md[1]; m.refresh = md[2]
@@ -283,12 +371,14 @@ Item {
 
   function setScale(value) {
     var m = root.selected
+    root.pushUndo()
     Model.changeGeometry(root.monitors, m, function() { m.scale = parseFloat(value) })
     root.changed()
   }
 
   function setTransform(value) {
     var m = root.selected
+    root.pushUndo()
     Model.changeGeometry(root.monitors, m, function() { m.transform = parseInt(value, 10) })
     root.changed()
   }
@@ -299,6 +389,7 @@ Item {
       root.statusText = "At least one screen must stay on."
       return
     }
+    root.pushUndo()
     m.disabled = !on
     if (m.disabled) root.monitors.forEach(function(o) { if (o.mirror === m.name) o.mirror = "" })
     Model.normalize(root.monitors)
@@ -307,15 +398,86 @@ Item {
 
   function setMirror(value) {
     var m = root.selected
+    root.pushUndo()
     m.mirror = value === "-" ? "" : value
     if (m.mirror) root.monitors.forEach(function(o) { if (o.mirror === m.name) o.mirror = "" })
     Model.normalize(root.monitors)
     root.changed()
   }
 
-  function setVrr(value) { root.selected.vrr = parseInt(value, 10); root.changed() }
+  function setVrr(value) { root.pushUndo(); root.selected.vrr = parseInt(value, 10); root.changed() }
 
-  function fix() { if (Model.autoArrange(root.monitors)) root.changed() }
+  function fix() {
+    var before = Model.snapshot(root.monitors)
+    if (!Model.autoArrange(root.monitors)) return
+    root.undoStack.push(before)
+    if (root.undoStack.length > root.undoLimit) root.undoStack.shift()
+    root.redoStack = []
+    root.undoDepth = root.undoStack.length
+    root.redoDepth = 0
+    root.changed()
+  }
+
+  // ---------------------------------------------------------------- identify
+
+  Timer {
+    id: identifyTimer
+    interval: 3000
+    onTriggered: root.identifying = false
+  }
+
+  // One click-through card per screen, centred, showing that output's name.
+  Variants {
+    model: Quickshell.screens
+    delegate: PanelWindow {
+      id: overlay
+      required property var modelData
+      readonly property var mon: {
+        root.revision
+        return root.monitors.find(function(m) { return m.name === overlay.modelData.name }) || null
+      }
+      screen: modelData
+      visible: root.identifying
+      anchors { top: true; bottom: true; left: true; right: true }
+      color: "transparent"
+      WlrLayershell.namespace: "monitor-manager-identify"
+      WlrLayershell.layer: WlrLayer.Overlay
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+      exclusionMode: ExclusionMode.Ignore
+      mask: Region {}
+
+      Rectangle {
+        anchors.centerIn: parent
+        width: idCol.implicitWidth + Style.space(64)
+        height: idCol.implicitHeight + Style.space(48)
+        radius: Style.cornerRadius + Style.space(6)
+        color: root.background
+        border.width: Style.space(3)
+        border.color: root.monitorColor(overlay.modelData.name)
+        Column {
+          id: idCol
+          anchors.centerIn: parent
+          spacing: Style.space(4)
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: overlay.modelData.name
+            color: root.foreground
+            font.family: root.fontFamily
+            font.pixelSize: Style.space(56)
+            font.bold: true
+          }
+          Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: !!overlay.mon
+            text: overlay.mon ? overlay.mon.width + "×" + overlay.mon.height + " · " + Model.fmtRefresh(overlay.mon.refresh) + " Hz" : ""
+            color: root.muted
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.title
+          }
+        }
+      }
+    }
+  }
 
   // ------------------------------------------------------------------ window
 
@@ -334,6 +496,7 @@ Item {
       anchors.margins: Style.spacing.panelPadding
       focus: true
       Keys.onEscapePressed: root.close()
+      Keys.onPressed: function(e) { root.handleKey(e) }
 
       // ---- header
       Row {
@@ -371,6 +534,9 @@ Item {
           id: actions
           spacing: Style.spacing.sm
           anchors.verticalCenter: parent.verticalCenter
+          Button { text: "Undo"; bordered: true; enabled: root.undoDepth > 0; onClicked: root.undo() }
+          Button { text: "Redo"; bordered: true; enabled: root.redoDepth > 0; onClicked: root.redo() }
+          Button { text: "Identify"; bordered: true; selected: root.identifying; onClicked: root.identify() }
           Button { text: "Reload"; bordered: true; onClicked: root.reload() }
           Button {
             text: root.snapEnabled ? "Snap: on" : "Snap: off"
@@ -491,6 +657,7 @@ Item {
               property real pressX: 0
               property real pressY: 0
               property var sticky: [null, null]
+              property bool undoPushed: false
 
               onPressed: function(mouse) {
                 root.select(tile.modelData)
@@ -498,6 +665,7 @@ Item {
                 pressX = p.x; pressY = p.y
                 startX = tile.mon.x; startY = tile.mon.y
                 sticky = [null, null]
+                undoPushed = false
                 canvas.frozen = true
               }
               onPositionChanged: function(mouse) {
@@ -515,6 +683,7 @@ Item {
                 }
                 nx = Math.round(nx); ny = Math.round(ny)
                 if (nx === tile.mon.x && ny === tile.mon.y) return
+                if (!undoPushed) { root.pushUndo(); undoPushed = true }
                 tile.mon.x = nx; tile.mon.y = ny
                 root.changed()
               }
@@ -624,7 +793,7 @@ Item {
         }
 
         Repeater {
-          model: { root.revision; return root.monitors.map(function(m, i) { return i }) }
+          model: { root.revision; return Model.displayOrder(root.monitors) }
           delegate: Rectangle {
             id: row
             required property int modelData
@@ -770,12 +939,32 @@ Item {
           onChanged: function(v) { root.setVrr(v) }
         }
 
-        Text {
+        Row {
           visible: !!root.selected
-          text: { root.revision; return root.selected ? "Position " + root.selected.x + ", " + root.selected.y : "" }
-          color: root.muted
-          font.family: root.fontFamily
-          font.pixelSize: Style.font.caption
+          spacing: Style.spacing.md
+          readonly property real fieldW: (sidebar.width - spacing) / 2
+          NumberField {
+            label: "X"
+            fieldWidth: parent.fieldW
+            enabled: !!root.selected && Model.inLayout(root.selected)
+            from: -32000; to: 32000
+            value: { root.revision; return root.selected ? Math.round(root.selected.x) : 0 }
+            foreground: root.foreground
+            accent: root.accent
+            fontFamily: root.fontFamily
+            onModified: function(v) { root.setPosition("x", v) }
+          }
+          NumberField {
+            label: "Y"
+            fieldWidth: parent.fieldW
+            enabled: !!root.selected && Model.inLayout(root.selected)
+            from: -32000; to: 32000
+            value: { root.revision; return root.selected ? Math.round(root.selected.y) : 0 }
+            foreground: root.foreground
+            accent: root.accent
+            fontFamily: root.fontFamily
+            onModified: function(v) { root.setPosition("y", v) }
+          }
         }
       }
 
@@ -786,7 +975,7 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         elide: Text.ElideRight
-        text: root.statusText || "Drag to move · Shift: no snapping · Esc: close"
+        text: root.statusText || "Drag or arrow keys to move (Shift: fine / no snapping) · Tab: next screen · Ctrl+Z: undo · Esc: close"
         color: root.muted
         font.family: root.fontFamily
         font.pixelSize: Style.font.caption

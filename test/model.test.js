@@ -120,6 +120,18 @@ for (const [r, label] of fx.refresh) check(`fmtRefresh ${r}`, M.fmtRefresh(r), l
   check('restore brings it back', M.sameSnapshot(snap, M.snapshot(a)), true)
 }
 
+// --- sidebar order follows the layout
+{
+  const mk = (name, x, y, w, h) => ({ name, x, y, width: w, height: h, scale: 1, transform: 0, disabled: false, mirror: '' })
+  const stacked = [mk('A', 160, 1080, 1920, 1080), mk('B', 0, 0, 3840, 1080)]
+  check('stacked: top first', M.displayOrder(stacked), [1, 0])
+  const row = [mk('A', 1920, 0, 1920, 1080), mk('B', 0, 0, 1920, 1080)]
+  check('row: left first', M.displayOrder(row), [1, 0])
+  const off = [mk('A', 0, 0, 1920, 1080), mk('B', 0, 0, 1920, 1080), mk('C', 1920, 0, 1920, 1080)]
+  off[0].disabled = true
+  check('disabled screens go last', M.displayOrder(off), [1, 2, 0])
+}
+
 if (failures) {
   console.error(`\n${failures} of ${checks} checks failed`)
   process.exit(1)

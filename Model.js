@@ -322,6 +322,28 @@ function changeGeometry(monitors, mon, mutate) {
   normalize(monitors)
 }
 
+// Indices of `monitors` in the order the screens appear in the layout: top to
+// bottom when the centres spread more vertically, left to right otherwise. Screens outside the
+// layout (off or mirroring) come last, in their original order.
+function displayOrder(monitors) {
+  var idx = monitors.map(function(m, i) { return i })
+  var inLay = idx.filter(function(i) { return inLayout(monitors[i]) })
+  var rest = idx.filter(function(i) { return !inLayout(monitors[i]) })
+  if (inLay.length > 1) {
+    // Compare how far apart the centres are, not the overall extent: a wide
+    // screen above a narrow one is still a vertical stack.
+    var cx = inLay.map(function(i) { return monitors[i].x + logicalW(monitors[i]) / 2 })
+    var cy = inLay.map(function(i) { return monitors[i].y + logicalH(monitors[i]) / 2 })
+    var spanW = Math.max.apply(null, cx) - Math.min.apply(null, cx)
+    var spanH = Math.max.apply(null, cy) - Math.min.apply(null, cy)
+    var key = spanH > spanW
+      ? function(i) { return monitors[i].y + logicalH(monitors[i]) / 2 }
+      : function(i) { return monitors[i].x + logicalW(monitors[i]) / 2 }
+    inLay.sort(function(p, q) { return key(p) - key(q) || p - q })
+  }
+  return inLay.concat(rest)
+}
+
 // Stacked layouts become a centred column, everything else a bottom-aligned row.
 function autoArrange(monitors) {
   var lay = layoutMonitors(monitors)

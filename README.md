@@ -12,7 +12,7 @@ then save it to `~/.config/hypr/monitors.lua`.
 https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
 
 
-> **Status: early development (0.1.1).** This plugin grew out of the
+> **Status: early development (0.2.0).** This plugin grew out of the
 > standalone GTK app
 > [omarchy_monitor_arranger](https://github.com/FabioCuccaro/omarchy_monitor_arranger),
 > which is feature complete and remains available.
@@ -24,6 +24,12 @@ https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
   jitter at the snap boundary.
 - Per monitor: on/off, resolution & refresh rate, scale (only values with an
   integer logical size), rotation/flip, mirroring, VRR.
+- **Identify** shows each output's name and mode on its own screen for a few
+  seconds.
+- Undo/redo of every layout change, and exact **X / Y** position fields.
+- Keyboard: <kbd>←↑↓→</kbd> nudge the selected screen by 10 px (<kbd>Shift</kbd>:
+  1 px), <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> cycle screens,
+  <kbd>Ctrl+Z</kbd> undo, <kbd>Ctrl+Shift+Z</kbd> / <kbd>Ctrl+Y</kbd> redo.
 - Neighbours stay attached when a monitor's size changes.
 - Warnings for overlapping or unreachable monitors, with a one-click **Fix**.
 - **Try** applies the layout via `hyprctl eval` and rolls back after 15 s
@@ -111,9 +117,9 @@ omarchy restart shell
 
 ## Roadmap
 
-- [ ] Identify: show each output's name on its screen
-- [ ] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
-- [ ] Precise X/Y position fields
+- [x] Identify: show each output's name on its screen
+- [x] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
+- [x] Precise X/Y position fields
 - [ ] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
 
 ## License

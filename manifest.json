@@ -7,9 +7,18 @@
   "license": "MIT",
   "description": "Visual multi-monitor layout manager: drag, snap, try live with auto-rollback, save to monitors.lua.",
   "kinds": [
-    "panel"
+    "panel",
+    "bar-widget"
   ],
   "entryPoints": {
-    "panel": "Panel.qml"
+    "panel": "Panel.qml",
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Monitor Manager",
+    "description": "Opens the Monitor Manager panel.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
   }
 }

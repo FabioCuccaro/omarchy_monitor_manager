@@ -5,9 +5,10 @@ visually: drag monitors into place with snapping, pick resolution, scale,
 rotation, VRR and mirroring, try the layout live with an automatic rollback,
 then save it to `~/.config/hypr/monitors.lua`.
 
+### Demo
+*Drag the monitors, try the layout live, save.*
 
-
-https://github.com/user-attachments/assets/35ab6546-4636-41eb-a66f-996deff00803
+https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
 
 
 > **Status: early development (0.1.0).** This plugin grew out of the

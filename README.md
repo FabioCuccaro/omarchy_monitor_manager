@@ -12,7 +12,7 @@ then save it to `~/.config/hypr/monitors.lua`.
 https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
 
 
-> **Status: early development (0.1.0).** This plugin grew out of the
+> **Status: early development (0.1.1).** This plugin grew out of the
 > standalone GTK app
 > [omarchy_monitor_arranger](https://github.com/FabioCuccaro/omarchy_monitor_arranger),
 > which is feature complete and remains available.

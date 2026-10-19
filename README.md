@@ -12,7 +12,7 @@ then save it to `~/.config/hypr/monitors.lua`.
 https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
 
 
-> **Status: early development (0.2.0).** This plugin grew out of the
+> **Status: early development (0.3.0).** This plugin grew out of the
 > standalone GTK app
 > [omarchy_monitor_arranger](https://github.com/FabioCuccaro/omarchy_monitor_arranger),
 > which is feature complete and remains available.
@@ -38,7 +38,8 @@ https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
   variables, the catch-all rule and unmanaged fields such as `bitdepth` are
   kept), backs the file up (last 10 kept), reloads Hyprland and reports
   `hyprctl configerrors`.
-- Native look: Omarchy shell fonts, controls and theme colours.
+- Native look: Omarchy shell fonts, controls and theme colours, plus an icon
+  in the bar.
 
 ## Requirements
 
@@ -70,7 +71,23 @@ If the panel still shows the old version after an update, run
 omarchy-shell shell toggle io.github.fabiocuccaro.monitor-manager
 ```
 
-<kbd>Esc</kbd> closes the panel.
+The panel opens as a floating overlay centred on the screen.
+<kbd>Esc</kbd> or a click outside it closes the panel.
+
+### Bar icon
+
+The plugin also provides a bar widget (two screens side by side) that opens the
+panel. A fresh `omarchy plugin add ... --enable` puts it in the right section of
+the bar; move it with `omarchy bar move` or the bar editor.
+
+If you already had the plugin enabled before 0.3.0, Omarchy keeps treating it as
+a panel only, so the icon doesn't appear by itself. Disable the plugin and put
+the widget on the bar once:
+
+```bash
+omarchy plugin disable io.github.fabiocuccaro.monitor-manager
+omarchy bar put io.github.fabiocuccaro.monitor-manager --after omarchy.monitor
+```
 
 ### Omarchy menu entry
 
@@ -91,8 +108,9 @@ You can also bind the command above to a key in `~/.config/hypr/bindings.lua`.
 ## Development
 
 ```
-manifest.json        plugin manifest (kind: panel)
-Panel.qml            UI: window, canvas, sidebar, try/save flow
+manifest.json        plugin manifest (kinds: panel, bar-widget)
+Panel.qml            UI: overlay, canvas, sidebar, try/save flow
+Widget.qml           bar icon that toggles the panel
 Model.js             pure layout + monitors.lua logic, no QML types
 menu-entry.sh        opt-in Omarchy menu entry (install/remove)
 test/model.test.js   node tests for Model.js
@@ -110,7 +128,7 @@ and restart the shell — saving files there triggers a reload, but changed QML
 is only picked up reliably after a restart:
 
 ```bash
-cp manifest.json Model.js Panel.qml \
+cp manifest.json Model.js Panel.qml Widget.qml \
   ~/.config/omarchy/plugins/io.github.fabiocuccaro.monitor-manager/
 omarchy restart shell
 ```

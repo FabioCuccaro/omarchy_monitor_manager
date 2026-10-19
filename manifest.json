@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.fabiocuccaro.monitor-manager",
   "name": "Monitor Manager",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Fabio Cuccaro",
   "license": "MIT",
   "description": "Visual multi-monitor layout manager: drag, snap, try live with auto-rollback, save to monitors.lua.",

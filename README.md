@@ -120,7 +120,7 @@ omarchy restart shell
 - [x] Identify: show each output's name on its screen
 - [x] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
 - [x] Precise X/Y position fields
-- [ ] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
+- [x] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
 
 ## License
 

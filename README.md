@@ -5,7 +5,10 @@ visually: drag monitors into place with snapping, pick resolution, scale,
 rotation, VRR and mirroring, try the layout live with an automatic rollback,
 then save it to `~/.config/hypr/monitors.lua`.
 
-![Monitor Manager](preview.png)
+
+
+https://github.com/user-attachments/assets/35ab6546-4636-41eb-a66f-996deff00803
+
 
 > **Status: early development (0.1.0).** This plugin grew out of the
 > standalone GTK app

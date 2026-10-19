@@ -114,7 +114,6 @@ omarchy restart shell
 - [ ] Identify: show each output's name on its screen
 - [ ] Undo and keyboard navigation (arrows to nudge, Tab to cycle)
 - [ ] Precise X/Y position fields
-- [ ] A shortcut from the built-in Display panel (needs a change in Omarchy itself)
 - [ ] Publish on [plugins.omarchy.org](https://plugins.omarchy.org)
 
 ## License

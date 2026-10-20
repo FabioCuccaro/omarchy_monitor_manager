@@ -38,6 +38,9 @@ Item {
   property int selectedIndex: 0
   property var liveSnapshot: ({})
   property string configText: ""
+  // False until monitors.lua has been read (a missing file counts as read), so
+  // a failed read can never turn into saving a rebuilt-from-nothing file.
+  property bool configReadable: false
   property string statusText: ""
   property bool snapEnabled: true
   property bool identifying: false
@@ -121,6 +124,7 @@ Item {
     root.redoStack = []
     root.undoDepth = 0
     root.redoDepth = 0
+    root.configReadable = false
     configFile.reload()
     readMonitors.running = true
   }
@@ -130,8 +134,13 @@ Item {
     path: root.configPath
     printErrors: false
     atomicWrites: false   // write in place: Hyprland watches the file for auto-reload
-    onLoaded: root.configText = text()
-    onLoadFailed: function(err) { root.configText = "" }
+    onLoaded: { root.configText = text(); root.configReadable = true }
+    onLoadFailed: function(err) {
+      root.configText = ""
+      root.configReadable = err === FileViewError.FileNotFound
+    }
+    onSaved: reloadProc.running = true
+    onSaveFailed: function(err) { root.statusText = "Couldn't write monitors.lua, nothing reloaded." }
   }
 
   Process {
@@ -245,12 +254,12 @@ Item {
   Process {
     id: backupProc
     property string newText: ""
-    command: ["sh", "-c", 'f="$1"; [ -f "$f" ] || exit 0; cp -p "$f" "$f.bak.$(date +%Y%m%d%H%M%S)"; '
-              + 'ls -1t "$f".bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f', "sh", root.configPath]
+    // A failed copy must fail the whole command; trimming old backups must not.
+    command: ["sh", "-c", 'f="$1"; [ -f "$f" ] || exit 0; cp -p "$f" "$f.bak.$(date +%Y%m%d%H%M%S)" || exit 1; '
+              + 'ls -1t "$f".bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f; exit 0', "sh", root.configPath]
     onExited: function(code) {
       if (code !== 0) { root.statusText = "Backup failed, nothing saved."; return }
       configFile.setText(backupProc.newText)
-      reloadProc.running = true
     }
   }
 
@@ -275,6 +284,10 @@ Item {
 
   function save() {
     if (backupProc.running || reloadProc.running) return
+    if (!root.configReadable) {
+      root.statusText = "Couldn't read monitors.lua, nothing saved."
+      return
+    }
     Model.normalize(root.monitors)
     root.changed()
     backupProc.newText = Model.updateConfigText(root.configText, root.monitors)

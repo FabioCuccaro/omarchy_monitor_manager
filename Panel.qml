@@ -255,8 +255,9 @@ Item {
     id: backupProc
     property string newText: ""
     // A failed copy must fail the whole command; trimming old backups must not.
+    // Names carry the timestamp: `ls -t` is useless here since cp -p keeps the source's mtime.
     command: ["sh", "-c", 'f="$1"; [ -f "$f" ] || exit 0; cp -p "$f" "$f.bak.$(date +%Y%m%d%H%M%S)" || exit 1; '
-              + 'ls -1t "$f".bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f; exit 0', "sh", root.configPath]
+              + 'ls -1 "$f".bak.* 2>/dev/null | head -n -10 | xargs -r rm -f; exit 0', "sh", root.configPath]
     onExited: function(code) {
       if (code !== 0) { root.statusText = "Backup failed, nothing saved."; return }
       configFile.setText(backupProc.newText)

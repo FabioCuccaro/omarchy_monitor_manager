@@ -501,3 +501,97 @@ function updateConfigText(text, monitors) {
   }
   return text
 }
+
+// ------------------------------------------------------------------ profiles
+// Named layout slots stored outside monitors.lua (profiles.json). A slot holds
+// a Model.snapshot (keyed by output name), so loading one only touches the
+// outputs that are connected right now.
+
+var PROFILE_SLOTS = 3
+
+function emptyProfiles() {
+  var slots = []
+  for (var i = 0; i < PROFILE_SLOTS; i++) slots.push({ name: "", snapshot: null, savedAt: "" })
+  return { version: 1, slots: slots }
+}
+
+// Tolerant parse: anything malformed becomes an empty slot, never an exception.
+function parseProfiles(text) {
+  var out = emptyProfiles()
+  var raw
+  try { raw = JSON.parse(text) } catch (e) { return out }
+  var slots = raw && Array.isArray(raw.slots) ? raw.slots : []
+  for (var i = 0; i < PROFILE_SLOTS && i < slots.length; i++) {
+    var s = slots[i]
+    if (!s || typeof s !== "object") continue
+    var snap = s.snapshot
+    var ok = snap && typeof snap === "object" && !Array.isArray(snap) && Object.keys(snap).length > 0
+    if (ok) {
+      for (var k in snap)
+        if (!Array.isArray(snap[k]) || snap[k].length !== STATE_KEYS.length) { ok = false; break }
+    }
+    out.slots[i] = {
+      name: typeof s.name === "string" ? s.name.slice(0, 40) : "",
+      snapshot: ok ? snap : null,
+      savedAt: ok && typeof s.savedAt === "string" ? s.savedAt : ""
+    }
+  }
+  return out
+}
+
+function profileLabel(slot, index) {
+  return slot && slot.name && slot.name.trim() ? slot.name.trim() : "Profile " + (index + 1)
+}
+
+// Returns a new profiles object with slot `index` overwritten by the layout.
+// An empty name keeps the slot's previous name.
+function saveProfile(profiles, index, name, monitors, nowIso) {
+  var next = parseProfiles(JSON.stringify(profiles))
+  var prev = next.slots[index]
+  var trimmed = String(name || "").trim().slice(0, 40)
+  next.slots[index] = { name: trimmed || prev.name, snapshot: snapshot(monitors), savedAt: nowIso || "" }
+  return next
+}
+
+function clearProfile(profiles, index) {
+  var next = parseProfiles(JSON.stringify(profiles))
+  next.slots[index] = { name: "", snapshot: null, savedAt: "" }
+  return next
+}
+
+// Applies a stored snapshot to the connected monitors (in place). Outputs in
+// the profile that aren't connected are reported in `missing`; connected
+// outputs the profile doesn't know are left as they are (`untouched`).
+// Mirror targets or modes that no longer exist are dropped rather than applied.
+function applyProfile(monitors, snap) {
+  var applied = [], missing = [], untouched = []
+  var names = {}
+  monitors.forEach(function(m) { names[m.name] = true })
+  Object.keys(snap).forEach(function(n) { if (!names[n]) missing.push(n) })
+  var partial = {}
+  monitors.forEach(function(m) {
+    if (!snap[m.name]) { untouched.push(m.name); return }
+    partial[m.name] = snap[m.name].slice()
+    var mirror = partial[m.name][9]
+    if (mirror && !names[mirror]) partial[m.name][9] = ""
+    var modeOk = (m.modes || []).some(function(md) {
+      return md[0] === snap[m.name][0] && md[1] === snap[m.name][1] && Math.abs(md[2] - snap[m.name][2]) < 0.02
+    })
+    if (!modeOk && (m.modes || []).length) {      // keep the current mode, adopt the rest
+      partial[m.name][0] = m.width; partial[m.name][1] = m.height; partial[m.name][2] = m.refresh
+      partial[m.name][5] = nearest(validScales(m.width, m.height), partial[m.name][5])
+    }
+    applied.push(m.name)
+  })
+  restore(monitors, partial)
+  normalize(monitors)
+  return { applied: applied, missing: missing, untouched: untouched }
+}
+
+function profileSummary(slot) {
+  if (!slot || !slot.snapshot) return "Empty"
+  var names = Object.keys(slot.snapshot).sort()
+  var active = names.filter(function(n) { var s = slot.snapshot[n]; return !s[8] }).length
+  var when = slot.savedAt ? " · " + slot.savedAt.slice(0, 16).replace("T", " ") : ""
+  return names.join(", ") + " (" + active + " on)" + when
+}

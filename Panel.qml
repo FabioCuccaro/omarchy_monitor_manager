@@ -28,6 +28,8 @@ Item {
   }
 
   readonly property string configPath: Quickshell.env("HOME") + "/.config/hypr/monitors.lua"
+  readonly property string profilesDir: Quickshell.env("HOME") + "/.config/omarchy/monitor-manager"
+  readonly property string profilesPath: root.profilesDir + "/profiles.json"
   readonly property int revertSeconds: 15
   readonly property int snapPx: 14
 
@@ -126,6 +128,8 @@ Item {
     root.redoDepth = 0
     root.configReadable = false
     configFile.reload()
+    profilesFile.reload()
+    root.closeProfiles()
     readMonitors.running = true
   }
 
@@ -293,6 +297,87 @@ Item {
     root.changed()
     backupProc.newText = Model.updateConfigText(root.configText, root.monitors)
     backupProc.running = true
+  }
+
+  // --------------------------------------------------------------- profiles
+
+  property var profiles: Model.emptyProfiles()
+  // False until profiles.json was read (a missing file counts as read), so a
+  // failed read can't overwrite existing profiles with an empty set.
+  property bool profilesReadable: false
+  property string profilesMode: ""      // "", "save" or "load"
+  property var profileNames: ["", "", ""]
+  property int confirmClear: -1
+
+  FileView {
+    id: profilesFile
+    path: root.profilesPath
+    printErrors: false
+    atomicWrites: true
+    onLoaded: { root.profiles = Model.parseProfiles(text()); root.profilesReadable = true }
+    onLoadFailed: function(err) {
+      root.profiles = Model.emptyProfiles()
+      root.profilesReadable = err === FileViewError.FileNotFound
+    }
+    onSaveFailed: function(err) { root.statusText = "Couldn't write profiles.json, profile not saved." }
+  }
+
+  // profiles.json lives in its own folder, which may not exist yet.
+  Process {
+    id: profilesDirProc
+    property string payload: ""
+    command: ["mkdir", "-p", root.profilesDir]
+    onExited: function(code) {
+      if (code !== 0) { root.statusText = "Couldn't create " + root.profilesDir; return }
+      profilesFile.setText(profilesDirProc.payload)
+    }
+  }
+
+  function storeProfiles(next, message) {
+    root.profiles = next
+    root.statusText = message
+    profilesDirProc.payload = JSON.stringify(next, null, 2) + "\n"
+    profilesDirProc.running = true
+  }
+
+  function openProfiles(mode) {
+    if (revertTimer.running) return
+    if (!root.profilesReadable) { profilesFile.reload(); root.statusText = "Couldn't read profiles.json, try again."; return }
+    root.profileNames = root.profiles.slots.map(function(s, i) { return s.name })
+    root.confirmClear = -1
+    root.profilesMode = root.profilesMode === mode ? "" : mode
+  }
+
+  function closeProfiles() { root.profilesMode = ""; root.confirmClear = -1 }
+
+  function saveToProfile(i) {
+    if (!root.profilesReadable) { root.statusText = "Couldn't read profiles.json, nothing saved."; return }
+    Model.normalize(root.monitors)
+    root.changed()
+    var next = Model.saveProfile(root.profiles, i, root.profileNames[i], root.monitors, new Date().toISOString())
+    root.storeProfiles(next, "Saved to \"" + Model.profileLabel(next.slots[i], i) + "\". Use Try / Save to apply it.")
+    root.closeProfiles()
+  }
+
+  // Loads into the editor only: nothing is applied until Try / Save, so the
+  // 15 s rollback still protects against a layout that blanks the screens.
+  function loadFromProfile(i) {
+    var slot = root.profiles.slots[i]
+    if (!slot.snapshot) return
+    root.pushUndo()
+    var r = Model.applyProfile(root.monitors, slot.snapshot)
+    root.changed()
+    var msg = "Loaded \"" + Model.profileLabel(slot, i) + "\". Use Try to apply it, Save to keep it."
+    if (r.missing.length) msg += " Not connected: " + r.missing.join(", ") + "."
+    if (r.untouched.length) msg += " Not in profile: " + r.untouched.join(", ") + "."
+    root.statusText = msg
+    root.closeProfiles()
+  }
+
+  function clearProfile(i) {
+    root.storeProfiles(Model.clearProfile(root.profiles, i), "Profile " + (i + 1) + " cleared.")
+    root.profileNames = root.profiles.slots.map(function(s) { return s.name })
+    root.confirmClear = -1
   }
 
   // ---------------------------------------------------------------- editing
@@ -533,7 +618,7 @@ Item {
         anchors.fill: parent
         anchors.margins: Style.spacing.panelPadding
         focus: true
-        Keys.onEscapePressed: root.close()
+        Keys.onEscapePressed: { if (root.profilesMode !== "") root.closeProfiles(); else root.close() }
         Keys.onPressed: function(e) { root.handleKey(e) }
 
         // ---- header
@@ -582,6 +667,8 @@ Item {
               selected: root.snapEnabled
               onClicked: root.snapEnabled = !root.snapEnabled
             }
+            Button { text: "Save to profile"; bordered: true; selected: root.profilesMode === "save"; onClicked: root.openProfiles("save") }
+            Button { text: "Load from profile"; bordered: true; selected: root.profilesMode === "load"; onClicked: root.openProfiles("load") }
             Button { text: "Try"; bordered: true; onClicked: root.tryLayout() }
             Button { id: saveBtn; text: "Save"; bordered: true; active: true; onClicked: root.save() }
           }
@@ -1003,6 +1090,136 @@ Item {
               fontFamily: root.fontFamily
               onModified: function(v) { root.setPosition("y", v) }
             }
+          }
+        }
+
+        // ---- profiles popup
+        Rectangle {
+          id: profilesCard
+          z: 10
+          visible: root.profilesMode !== ""
+          anchors.top: header.bottom
+          anchors.topMargin: Style.spacing.md
+          anchors.right: parent.right
+          width: Math.min(Style.space(560), parent.width)
+          height: profilesCol.implicitHeight + Style.spacing.xl * 2
+          radius: Style.cornerRadius
+          color: root.background
+          border.color: root.accent
+          MouseArea { anchors.fill: parent }
+
+          Column {
+            id: profilesCol
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: Style.spacing.xl
+            spacing: Style.spacing.md
+
+            Text {
+              text: root.profilesMode === "save" ? "Save current layout to a profile" : "Load a profile into the editor"
+              color: root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.title
+              font.bold: true
+            }
+            Text {
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: root.profilesMode === "save"
+                    ? "Pick a slot and optionally name it. Saving over a slot replaces it."
+                    : "Loading only changes the editor. Try applies it live, Save writes it to monitors.lua."
+              color: root.muted
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.caption
+            }
+
+            Repeater {
+              model: root.profiles.slots.length
+              delegate: Rectangle {
+                id: slotRow
+                required property int modelData
+                readonly property var slot: root.profiles.slots[modelData]
+                readonly property bool hasData: !!slot && !!slot.snapshot
+                width: profilesCol.width
+                height: slotCol.implicitHeight + Style.spacing.md * 2
+                radius: Style.cornerRadius
+                color: "transparent"
+                border.color: root.mix(root.background, root.foreground, 0.15)
+
+                Row {
+                  anchors.fill: parent
+                  anchors.margins: Style.spacing.md
+                  spacing: Style.spacing.md
+
+                  Column {
+                    id: slotCol
+                    width: parent.width - slotButtons.width - parent.spacing
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Style.space(2)
+
+                    TextField {
+                      width: parent.width
+                      visible: root.profilesMode === "save"
+                      placeholderText: "Profile " + (slotRow.modelData + 1)
+                      text: root.profileNames[slotRow.modelData]
+                      maximumLength: 40
+                      foreground: root.foreground
+                      accent: root.accent
+                      onTextEdited: {
+                        var n = root.profileNames.slice()
+                        n[slotRow.modelData] = text
+                        root.profileNames = n
+                      }
+                      onAccepted: root.saveToProfile(slotRow.modelData)
+                    }
+                    Text {
+                      width: parent.width
+                      visible: root.profilesMode === "load"
+                      elide: Text.ElideRight
+                      text: Model.profileLabel(slotRow.slot, slotRow.modelData)
+                      color: slotRow.hasData ? root.foreground : root.muted
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
+                    }
+                    Text {
+                      width: parent.width
+                      elide: Text.ElideRight
+                      text: Model.profileSummary(slotRow.slot)
+                      color: root.muted
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
+
+                  Row {
+                    id: slotButtons
+                    spacing: Style.spacing.sm
+                    anchors.verticalCenter: parent.verticalCenter
+                    Button {
+                      visible: slotRow.hasData
+                      text: root.confirmClear === slotRow.modelData ? "Sure?" : "Clear"
+                      bordered: true
+                      onClicked: {
+                        if (root.confirmClear === slotRow.modelData) root.clearProfile(slotRow.modelData)
+                        else root.confirmClear = slotRow.modelData
+                      }
+                    }
+                    Button {
+                      text: root.profilesMode === "save" ? "Save" : "Load"
+                      bordered: true
+                      active: true
+                      enabled: root.profilesMode === "save" || slotRow.hasData
+                      onClicked: root.profilesMode === "save" ? root.saveToProfile(slotRow.modelData)
+                                                               : root.loadFromProfile(slotRow.modelData)
+                    }
+                  }
+                }
+              }
+            }
+
+            Button { text: "Close"; bordered: true; onClicked: root.closeProfiles() }
           }
         }
 

@@ -132,6 +132,37 @@ for (const [r, label] of fx.refresh) check(`fmtRefresh ${r}`, M.fmtRefresh(r), l
   check('disabled screens go last', M.displayOrder(off), [1, 2, 0])
 }
 
+// --- profiles
+{
+  check('3 empty slots', M.emptyProfiles().slots.length, 3)
+  check('garbage parses to empty', M.parseProfiles('not json').slots.every(s => s.snapshot === null), true)
+  check('bad snapshot dropped', M.parseProfiles(JSON.stringify({ slots: [{ name: 'x', snapshot: { A: [1] } }] })).slots[0].snapshot, null)
+
+  const a = clone(mons)
+  let p = M.saveProfile(M.emptyProfiles(), 1, '  Desk  ', a, '2026-11-24T10:00:00Z')
+  check('save keeps name trimmed', p.slots[1].name, 'Desk')
+  check('save leaves other slots empty', [p.slots[0].snapshot, p.slots[2].snapshot], [null, null])
+  check('label fallback', M.profileLabel(p.slots[0], 0), 'Profile 1')
+  check('rename-less save keeps name', M.saveProfile(p, 1, '', a, 'x').slots[1].name, 'Desk')
+  p = M.parseProfiles(JSON.stringify(p))
+  check('round-trips through JSON', M.sameSnapshot(p.slots[1].snapshot, M.snapshot(a)), true)
+
+  const b = clone(mons)
+  b[0].x = 500; b[1].scale = 2; b[1].disabled = true
+  const r = M.applyProfile(b, p.slots[1].snapshot)
+  check('apply reports every output', r.applied.length, b.length)
+  const expected = clone(mons); M.normalize(expected)
+  check('apply restores layout', M.sameSnapshot(M.snapshot(b), M.snapshot(expected)), true)
+
+  const c = clone(mons)
+  const snap = JSON.parse(JSON.stringify(p.slots[1].snapshot))
+  snap['DP-GHOST'] = snap[c[0].name].slice()
+  const r2 = M.applyProfile(c, snap)
+  check('missing outputs reported, not fatal', r2.missing, ['DP-GHOST'])
+  check('clear empties slot', M.clearProfile(p, 1).slots[1].snapshot, null)
+  check('empty summary', M.profileSummary(M.emptyProfiles().slots[0]), 'Empty')
+}
+
 if (failures) {
   console.error(`\n${failures} of ${checks} checks failed`)
   process.exit(1)

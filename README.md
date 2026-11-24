@@ -24,6 +24,12 @@ https://github.com/user-attachments/assets/0b1ef378-7105-4c5d-b816-a2d7b57fb3cd
   jitter at the snap boundary.
 - Per monitor: on/off, resolution & refresh rate, scale (only values with an
   integer logical size), rotation/flip, mirroring, VRR.
+- **Profiles**: three named slots. **Save to profile** stores the current
+  layout, **Load from profile** puts a stored one into the editor (undoable;
+  nothing is applied until **Try** or **Save**). Outputs are matched by name:
+  ones that aren't connected are skipped and reported, modes that no longer
+  exist keep the current mode. Stored in
+  `~/.config/omarchy/monitor-manager/profiles.json`.
 - **Identify** shows each output's name and mode on its own screen for a few
   seconds.
 - Undo/redo of every layout change, and exact **X / Y** position fields.
